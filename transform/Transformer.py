@@ -68,3 +68,29 @@ class Transformer:
         # ['for', init, condition, modifier, body]
         [_tag, init, condition, modifier, body] = forExp
         return['begin', init, ['while', condition, ['begin', body, modifier]]]
+    
+    def transformIncToSet(incExp):
+        """
+        Transforms an increment expression into an assignment.
+        
+        A typical increment expression is:
+            (++ foo)
+        and this will be transformed into:
+            (set foo (+ foo 1))
+        """
+        # Unpack the increment expression: ['++', variable]
+        [_tag, var] = incExp
+        return ['set', var, ['+', var, 1]]
+
+    def transformDecToSet(decExp):
+        """
+        Transforms a decrement expression into an assignment.
+        
+        A typical decrement expression is:
+            (-- foo)
+        and this will be transformed into:
+            (set foo (- foo 1))
+        """
+        # Unpack the decrement expression: ['--', variable]
+        [_tag, var] = decExp
+        return ['set', var, ['-', var, 1]]

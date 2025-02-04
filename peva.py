@@ -133,6 +133,22 @@ class Peva:
             return self.eval(whileExp, env)
         
         #################################################
+        # Increment: (++ foo)
+        #
+        # syntactic sugar for: (set foo (+ foo 1))
+        if (exp[0] == '++'):
+            setExp = self._transformer.Transformer.transformIncToSet(exp)
+            return self.eval(setExp, env)
+        
+        #################################################
+        # Increment: (-- foo)
+        #
+        # syntactic sugar for: (set foo (- foo 1))
+        if (exp[0] == '--'):
+            setExp = self._transformer.Transformer.transformDecToSet(exp)
+            return self.eval(setExp, env)
+        
+        #################################################
         # Lambda Function: (lambda) (x) (* x x))
         if(exp[0] == 'lambda'):
             [_tag, params, body] = exp
