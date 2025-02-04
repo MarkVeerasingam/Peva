@@ -29,6 +29,7 @@
 
 import re
 from Enviroment import Environment 
+from transform import Transformer
 
 """
 Peva Interpreter.
@@ -37,10 +38,11 @@ class Peva:
     """
     Creates an Eva instance with the global environment.
     """
-    def __init__(self, enviroment = None):
+    def __init__(self, enviroment = None, _transformer = Transformer):
         if enviroment is None:
             enviroment = GlobalEnvironment
         self.enviroment = enviroment
+        self._transformer = _transformer
     
     """
     Evaluates an expression in the given environment.
@@ -105,15 +107,30 @@ class Peva:
         #################################################
         # Function decleration: (def square (x) (* x x))
         #
-        # syntatic sugar for: (var square (lambda (x) (* x x)))
+        # syntactic sugar for: (var square (lambda (x) (* x x)))
         if(exp[0] == 'def'):
             [_tag, name, params, body] = exp
             
             # JIT-Transpile to a variable decleration
             # we create a variable expression node, just on time here
-            varExp = ['var', name, ['lambda', params, body]]
-
+            varExp = self._transformer.Transformer.transformDefToLambda(exp)
             return self.eval(varExp, env)
+        
+        #################################################
+        # Switch-expressions: (switch (cond1, block1) .. )
+        #
+        # syntactic sugar for: nested if-expressions
+        if (exp[0] == 'switch'):
+            ifExp = self._transformer.Transformer.transformSwitchToIf(exp)
+            return self.eval(ifExp, env)
+        
+        #################################################
+        # for-loop: (for init condition modifier body)
+        #
+        # syntactic sugar for: (begin init (while conidition (begin body modifier)))
+        if (exp[0] == 'for'):
+            whileExp = self._transformer.Transformer.transformForToWhile(exp)
+            return self.eval(whileExp, env)
         
         #################################################
         # Lambda Function: (lambda) (x) (* x x))
